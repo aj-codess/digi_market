@@ -1,6 +1,16 @@
+import user_schema from "./../model/userSchema.js";
 import logService from "./../services/logService.js";
 
-const newUser=(req,res)=>{
+
+const cookieOptions = {
+    httpOnly: true, 
+    secure: true,
+    sameSite: 'Strict',
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+};
+
+
+const newUser=async(req,res)=>{
 
     try{
 
@@ -15,7 +25,28 @@ const newUser=(req,res)=>{
     
         const new_id=logService.gen_id();
 
-        
+        const newUser=new user_schema({
+            id:new_id,
+            username:username,
+            email:gmail,
+            password:logService.pass_crypto(password),
+            phone:phone
+        });
+
+        const isSaved=await newUser.save();
+
+        if(isSaved){
+
+            const jwt_token=await logService.sign_token(new_id);
+            res.cookie('auth_token', jwt_token, cookieOptions);
+
+            return res.status(200).json({
+                email: log_mail_checks,
+                password: log_pass_checks,
+                message: 'Authentication successful',
+            });
+
+        };
 
     } catch(error){
         return res.status(500).json({status:"failed",message:"Internal Server Problem"});

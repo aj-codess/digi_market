@@ -25,9 +25,38 @@ const userSchema=new mongoose.Schema({
         type: String,
         required: false
     },
+    phone:{
+        type:String,
+        required:true,
+        trim:true,
+        minlength:10,
+        unique:true
+    },
     isActive: {
         type: Boolean,
         default: true,
+    },
+    user_ads:{
+        type:[{
+            _id:false,
+            id:{
+                type:String,
+                required:true,
+                unique:true
+            },
+            ads_name:{
+                type:String,
+                required:true,
+            },
+            ads_description:{
+                type:String,
+            },
+            ads_postedTimestap:{
+                type:Date,
+                default: Date.now
+            }
+        }],
+        default:[]
     }
 },{timestamps: true});
 
