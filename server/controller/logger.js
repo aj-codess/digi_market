@@ -55,7 +55,45 @@ const newUser=async(req,res)=>{
 };
 
 
-const oldUser=(req,res)=>{
+const oldUser=async(req,res)=>{
+
+    try{
+
+        const {gmail,password,phone}=req.body;
+
+        if(!logService.mail_checks(gmail) || !logService.pass_checks(password)){
+            return res.status(401).json({status:"Failed",message:"Initials Didnt pass criteria"});
+        };
+
+        const isUser=await user_schema.findOne({
+            email:gmail
+        });
+
+        if(isUser){
+            const pass_crypto=logService.pass_crypto(password);
+
+            if(pass_crypto === isUser.password){
+                const jwt_token=await logService.sign_token(isUser.id);
+                res.cookie('auth_token',jwt_token,cookieOptions);
+
+                res.status(200).json({
+                    status:"success",
+                    gmail:isUser.email,
+                    message:"Logged In Successfully"
+                });
+            } else{
+                res.status(404).json({
+                    status:"Error",
+                    message:"User Not Found"
+                });
+            }
+        }
+
+        res.status(404).json({message:"Error looggin"});
+
+    } catch(error){
+        return res.status(500).json({status:"failed",message:"Internal Server Problem"});
+    }
 
 };
 

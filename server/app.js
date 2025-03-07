@@ -2,10 +2,13 @@ import express from "express";
 import dotenv from "dotenv";
 import log_router from "./router/log_router.js";
 import db_connect from "./config/db_connect.js"
+import push_make_app from "./config/push_connect.js";
 
 dotenv.config();
 
 db_connect();
+
+push_make_app();
 
 const PORT=process.env.ser || 3000;
 

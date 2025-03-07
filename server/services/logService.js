@@ -1,6 +1,6 @@
-import bcrypt from 'bcrypt'
-import jwt from 'jsonwebtoken'
-import generateUniqueId from 'generate-unique-id'
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import generateUniqueId from 'generate-unique-id';
 import * as crypto from "crypto";
 
 const saltRounds=10;
