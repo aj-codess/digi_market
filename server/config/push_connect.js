@@ -1,56 +1,45 @@
-import { https } from 'follow-redirects';
-import fs from "fs";
 import dotenv from "dotenv";
+import axios from "axios";
+import application_id from "../global_dcl.js";
 
 dotenv.config();
 
-var options = {
-    'method': 'POST',
-    'hostname': '4ewdm6.api.infobip.com',
-    'path': '/2fa/2/applications',
-    'headers': {
-        'Authorization': `App ${process.env.PUSH_KEY}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-    },
-    'maxRedirects': 20
-};
+const INFOBIP_BASE_URL = process.env.INFOBIP_BASE_URL;
+const INFOBIP_API_KEY = process.env.PUSH_KEY;
 
 
-const push_make_app=async()=>{
-    var req = https.request(options, function (res) {
-        var chunks = [];
-    
-        res.on("data", function (chunk) {
-            chunks.push(chunk);
-        });
-    
-        res.on("end", function (chunk) {
-            var body = Buffer.concat(chunks);
-            console.log(body.toString());
-        });
-    
-        res.on("error", function (error) {
-            console.error(error);
-        });
-    });
-    
-    var postData = JSON.stringify({
-        "name": "2fa test application",
-        "enabled": true,
-        "configuration": {
-            "pinAttempts": 10,
-            "allowMultiplePinVerifications": true,
-            "pinTimeToLive": "15m",
-            "verifyPinLimit": "1/3s",
-            "sendPinPerApplicationLimit": "100/1d",
-            "sendPinPerPhoneNumberLimit": "10/1d"
-        }
-    });
-    
-    req.write(postData);
-    
-    req.end();
-};
 
-export default push_make_app;
+async function create2FAApplication() {
+
+  const url = `${INFOBIP_BASE_URL}/2fa/1/applications`;
+  const headers = {
+    "Authorization": `App ${INFOBIP_API_KEY}`,
+    "Content-Type": "application/json"
+  };
+  const data = {
+    name: "MyApp2FA",
+    configuration: {
+      pinAttempts: 3,
+      allowMultiplePinVerifications: false,
+      pinTimeToLive: "5m",
+      verifyPinLimit: "3/1h"
+    }
+  };
+
+  try {
+
+    const response = await axios.post(url, data, { headers });
+    console.log("2FA Application Created....");
+    application_id.id=response.data.applicationId;
+
+  } catch (error) {
+
+    console.error("Error creating 2FA application:", error.response?.data || error.message);
+
+  };
+
+}
+
+
+
+export default create2FAApplication;

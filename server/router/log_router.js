@@ -10,6 +10,10 @@ log_router.post("/oldUser",(req,res)=>{
     logger.old_user(req,res)
 });
 
+log_router.post("OTP_verification",(req,res)=>{
+    logger.verify_OTP(req,res);
+});
+
 log_router.post("/sessionless",(req,res)=>{
     logger.sessionless(req,res)
 });

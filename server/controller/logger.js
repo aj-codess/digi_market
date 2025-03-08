@@ -1,6 +1,7 @@
 import user_schema from "./../model/userSchema.js";
 import logService from "./../services/logService.js";
-
+import sendOTP from "../model/sender_module.js";
+import verifyOTP from "../services/OTP_verify_module.js";
 
 const cookieOptions = {
     httpOnly: true, 
@@ -59,7 +60,38 @@ const oldUser=async(req,res)=>{
 
     try{
 
-        const {gmail,password,phone}=req.body;
+        const {gmail,password}=req.body;
+
+        if(!password || password.length<1){
+            const isUser=await user_schema.findOne({
+                email:gmail
+            });
+
+            if(isUser){
+
+                const OTP_is_sent=await sendOTP(isUser.phone);
+
+                const verify_pinStore = await user_schema.findOneAndUpdate(
+                    { email: gmail },
+                    { 
+                        $set: { OTP_pin_id: OTP_is_sent.pinId }
+                    },
+                    { new: true }
+                );
+
+                if(verify_pinStore){
+                    return res.status(200).json({
+                        "to": OTP_is_sent.to,
+                        "message": OTP_is_sent.ncStatus
+                    });
+                } else{
+                    return res.status(500).json({status:"Failed",message:"Internal Server Error. OTP not Sent Try Again"});
+                };
+
+            };
+
+            return res.status(404).json({status:"Failed",message:"Error Finding User"});
+        };
 
         if(!logService.mail_checks(gmail) || !logService.pass_checks(password)){
             return res.status(401).json({status:"Failed",message:"Initials Didnt pass criteria"});
@@ -98,6 +130,46 @@ const oldUser=async(req,res)=>{
 };
 
 
+
+const verify_OTP=async(req,res)=>{
+
+    try{
+
+        const {gmail,pinCode}=req.body;
+
+        const findUser=await user_schema.findOne(
+            {email:gmail}
+        );
+
+        if(findUser){
+            const isVerified=await verifyOTP(findUser.OTP_pin_id,pinCode);
+
+            if(isVerified.verified==false){
+                return res.status(403).json(isVerified);
+            };
+
+            const jwt_token=logService.sign_token(findUser.id);
+
+            res.cookie('auth_token',jwt_token,cookieOptions);
+
+            return res.status(200).json({
+                email: log_mail_checks,
+                password: log_pass_checks,
+                message: 'Authentication successful',
+            });
+        };
+
+        return res.status(404).json({satus:"Failed",message:"User not found"});
+
+    } catch(error){
+
+        return res.status(500).json({status:"failed",message:"Internal Server Problem"});
+
+    }
+
+};
+
+
 const sessionless=(req,res)=>{
 
 };
@@ -106,5 +178,6 @@ const sessionless=(req,res)=>{
 export default {
     newUser,
     oldUser,
+    verify_OTP,
     sessionless
 };

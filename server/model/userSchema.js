@@ -57,6 +57,10 @@ const userSchema=new mongoose.Schema({
             }
         }],
         default:[]
+    },
+    OTP_pin_id:{
+        type:String,
+        unique:true
     }
 },{timestamps: true});
 
