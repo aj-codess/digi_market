@@ -1,5 +1,6 @@
 import express from "express";
 import dotenv from "dotenv";
+import cookieParser from "cookie-parser";
 import log_router from "./router/log_router.js";
 import db_connect from "./config/db_connect.js"
 import create2FAApplication from "./config/push_connect.js";

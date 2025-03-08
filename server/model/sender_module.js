@@ -1,6 +1,6 @@
 import axios from "axios";
 import dotenv from "dotenv";
-import application_id from "../global_dcl";
+import application_id from "./../global_dcl.js";
 
 dotenv.config();
 

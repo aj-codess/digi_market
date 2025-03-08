@@ -1,3 +1,4 @@
+import express from "express";
 import logger from "./../controller/logger.js";
 
 const log_router=express.Router();
