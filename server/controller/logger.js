@@ -2,6 +2,7 @@ import user_schema from "./../model/userSchema.js";
 import logService from "./../services/logService.js";
 import sendOTP from "../model/sender_module.js";
 import verifyOTP from "../services/OTP_verify_module.js";
+import sessionless_controller from "./sessionless_controller.js";
 
 const cookieOptions = {
     httpOnly: true, 
@@ -170,7 +171,62 @@ const verify_OTP=async(req,res)=>{
 };
 
 
-const sessionless=(req,res)=>{
+const sessionless=async(req,res)=>{
+
+    try{
+
+        const authHeader = req.headers.authorization;
+
+        const deviceFromHeader = authHeader && authHeader.startsWith("os ") ? authHeader.split(" ")[1] : null;
+    
+        const temp_id=logService.gen_id();
+
+        const token = await logService.sign_token(temp_id);
+
+        const session_isCreated=sessionless_controller.create_session(temp_id,deviceFromHeader);
+
+        if(session_isCreated){
+            res.cookie('auth_token', token, cookieOptions);
+
+            return res.json({
+                message: 'Temporary Session successful'
+            });
+        } else{
+
+            return res.json({
+                message:"Unable to create Temporary Session"
+            })
+
+        }
+
+    } catch(error){
+
+        console.error('Error during token creation:', error);
+
+        return res.status(500).json({ error: 'Internal Server Error' });
+
+    }
+
+};
+
+
+const remove_session=async()=>{
+    try{
+
+        if(sessionless_controller.idIsIn_session(user_id)){
+
+            sessionless_controller.delete_session(user_id);
+            
+            return res.status(200).json({message:"Temporary Session Deleted."})
+        };
+
+    } catch(error){
+
+        console.error('Error During Session Deletion :', error);
+
+        return res.status(500).json({ error: 'Internal Server Error' });
+
+    };
 
 };
 
