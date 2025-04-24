@@ -4,7 +4,7 @@ import sessionless_contr from "./../controller/sessionless_controller.js";
 
 const auth_router = express.Router();
 
-auth_router.all("*", async (req, res, next) => {
+auth_router.use(async (req, res, next) => {
 
     if (req.path=="/login" || req.path.startsWith("/login/")) {
 
